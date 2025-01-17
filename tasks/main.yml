@@ -1,0 +1,32 @@
+- name: "Uninstall RKE2"
+  shell: "/usr/local/bin/rke2-uninstall.sh"
+  ignore_errors: true
+  when: (uninstall_rke2 and inventory_hostname in groups['controller']) or  (unsintall_rke2_on_worker and inventory_hostname in groups['worker'])
+- name: "Prepare nodes"
+  include_tasks: prepare-nodes.yml
+- name: "Install rke2"
+  include_tasks: install-rke2.yml
+- name: "Enable RKE2 service"
+  include_tasks: enable-rke2.yml
+- name: "/var/lib/rancher/rke2/server/manifests"
+  file:
+    path: "/var/lib/rancher/rke2/server/manifests"
+    state: directory
+- name: "generate /etc/rancher/rke2/config.yaml"
+  include_tasks: generate-config.yml
+- name: "install longhorn"
+  include_tasks: install-longhorn.yml
+  when: install_longhorn and inventory_hostname in groups['controller']
+- name: "install monitoring"
+  include_tasks: install-monitoring.yml
+  when: install_monitoring and inventory_hostname in groups['controller']
+- name: "install argocd"
+  include_tasks: install-argocd.yml
+  when: install_argocd and inventory_hostname in groups['controller']
+- name: "install autoscaller"
+  include_tasks: install-autoscaller.yml
+  when: install_autoscaller and inventory_hostname in groups['controller']
+- name: "Bootstrap RKE2"
+  include_tasks: bootstrap.yml
+- name: "Bootstrap agent RKE2"
+  include_tasks: bootstrap-agent.yml

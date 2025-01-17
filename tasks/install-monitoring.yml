@@ -1,0 +1,10 @@
+---
+- name: "install monitoring"
+  template:
+    src: monitoring.yaml.j2
+    force: yes
+    dest: /var/lib/rancher/rke2/server/manifests/monitoring.yaml
+- name: "install loki"
+  copy:
+    src: loki.yaml
+    dest: /var/lib/rancher/rke2/server/manifests/loki.yaml

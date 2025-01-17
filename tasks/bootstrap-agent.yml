@@ -1,0 +1,38 @@
+---
+- name: "Ensure backup config exists"
+  command: "cp /etc/rancher/rke2/config.yaml /etc/rancher/rke2/config.yaml.bak"
+  when: 
+    - inventory_hostname in groups['worker']
+    - not lookup('file', '/etc/rancher/rke2/config.yaml.bak', errors='ignore')
+
+- name: "Check current config checksum"
+  command: "sha256sum /etc/rancher/rke2/config.yaml"
+  register: current_config_checksum
+  when: inventory_hostname in groups['worker']
+
+- name: "Check backup config checksum (if exists)"
+  command: "sha256sum /etc/rancher/rke2/config.yaml.bak"
+  register: backup_config_checksum
+  when: 
+    - inventory_hostname in groups['worker']
+
+- name: "Restart rke2-agent if config has changed"
+  systemd:
+    name: rke2-agent
+    enabled: yes
+    state: restarted
+  when: 
+    - inventory_hostname in groups['worker']
+    - current_config_checksum.stdout.split()[0] != backup_config_checksum.stdout.split()[0]
+- name: "start rke2-agent if config has not changed"
+  systemd:
+    name: rke2-agent
+    enabled: yes
+    state: started
+  when: 
+    - inventory_hostname in groups['worker']
+    - current_config_checksum.stdout.split()[0] == backup_config_checksum.stdout.split()[0]
+- name: "Update backup config"
+  command: "cp /etc/rancher/rke2/config.yaml /etc/rancher/rke2/config.yaml.bak"
+  when: 
+    - inventory_hostname in groups['worker']

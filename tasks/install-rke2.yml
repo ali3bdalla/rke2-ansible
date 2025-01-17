@@ -1,0 +1,9 @@
+- name: "install rke2"
+  shell: |
+    curl -sfL https://get.rke2.io | sh -
+  when: inventory_hostname in groups['controller']
+
+- name: "install rke2 Agent" 
+  shell: |
+    curl -sfL https://get.rke2.io | sh -s -- agent
+  when: inventory_hostname in groups['worker']

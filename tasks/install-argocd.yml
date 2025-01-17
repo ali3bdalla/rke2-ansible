@@ -1,0 +1,11 @@
+- name: "add argocd helm chart"
+  template:
+    src: argocd.yaml.j2
+    force: yes
+    dest: /var/lib/rancher/rke2/server/manifests/argocd.yaml
+- name: "install argocd bootstraper"
+  template:
+    src: argocd-bootstraper.yaml.j2
+    dest: /var/lib/rancher/rke2/server/manifests/argocd-bootstraper.yaml
+    force: yes
+  when: install_argocd_bootstraper == true and argocd_bootstrap_repo_url != ""

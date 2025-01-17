@@ -1,0 +1,16 @@
+---
+uninstall_rke2: false
+unsintall_rke2_on_worker: false
+rke2_token: ""
+install_longhorn: false
+install_monitoring: false
+install_argocd: false
+install_autoscaller: false
+install_argocd_bootstraper: false
+argocd_bootstrap_repo_url: ""
+argocd_bootstrap_repo_path: "bootstrap"
+argocd_bootstrap_repo_branch: "HEAD"
+argocd_bootstrap_repo_username: ""
+argocd_bootstrap_repo_access_token: ""
+monitoring_slack_url: ""
+monitoring_slack_channel: ""

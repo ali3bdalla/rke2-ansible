@@ -1,0 +1,10 @@
+{% if inventory_hostname != groups['controller'][0] %}
+server: https://{{ groups['controller'][0] }}:9345
+{% endif %}
+token: "{{ rke2_token }}"
+tls-san:
+ {% for host in groups['controller'] %}
+  - {{ host }}
+  {% endfor %}
+node-taint:
+  - "CriticalAddonsOnly=true:NoExecute"

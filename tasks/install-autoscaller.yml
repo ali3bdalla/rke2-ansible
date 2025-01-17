@@ -1,0 +1,5 @@
+- name: "install autoscaller"
+  template:
+    src: autoscaller.yaml.j2
+    dest: /var/lib/rancher/rke2/server/manifests/autoscaller.yaml
+    force: yes

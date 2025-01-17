@@ -1,0 +1,48 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: loki-stack
+  namespace: monitoring
+spec:
+  chart: loki-stack
+  version: "2.10.1"
+  repo: https://grafana.github.io/helm-charts
+  valuesContent: |-
+    promtail:
+      enabled: true
+      config:
+        logLevel: info
+        serverPort: 3101
+        clients:
+          - url: http://{{ .Release.Name }}:3100/loki/api/v1/push
+
+    fluent-bit:
+      enabled: false
+    grafana:
+      enabled: false
+    loki:
+      image:
+        tag: 2.9.3
+      commonConfig:
+        replication_factor: 1
+      schemaConfig:
+        configs:
+          - from: 2024-04-01
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: loki_index_
+              period: 24h
+      ingester:
+        chunk_encoding: snappy
+      tracing:
+        enabled: true
+      querier:
+        # Default is 4, if you have enough memory and CPU you can increase, reduce if OOMing
+        max_concurrent: 2
+      persistence:
+        enabled: true
+        size: 10Gi
+      enabled: true
+      isDefault: false

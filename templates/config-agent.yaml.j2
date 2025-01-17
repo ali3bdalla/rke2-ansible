@@ -1,0 +1,7 @@
+server: https://{{ groups['controller'][0] }}:9345
+token: "{{ rke2_token }}"
+tls-san:
+ {% for host in groups['controller'] %}
+  - {{ host }}
+ {% endfor %}
+disable-cloud-controller: true

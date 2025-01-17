@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: kube-prometheus-stack
+  namespace: monitoring
+spec:
+  chart: kube-prometheus-stack
+  version: "66.6.0"
+  repo: https://prometheus-community.github.io/helm-charts
+  valuesContent: |-
+    grafana:
+      enabled: true
+      adminPassword: "admin"
+      ingress:
+        enabled: true
+        hosts:
+          - grafana.internal
+      additionalDataSources: 
+        - name: loki
+          type: loki
+          access: proxy
+          editable: true
+          orgId: 1
+          url: http://loki-stack:3100
+          version: 1
+    alertmanager:
+      config:
+        global:
+          slack_api_url: '{{ monitoring_slack_url}}'
+          resolve_timeout: 5m
+        inhibit_rules:
+          - source_matchers:
+              - 'severity = critical'
+            target_matchers:
+              - 'severity =~ warning|info'
+            equal:
+              - 'namespace'
+              - 'alertname'
+          - source_matchers:
+              - 'severity = warning'
+            target_matchers:
+              - 'severity = info'
+            equal:
+              - 'namespace'
+              - 'alertname'
+          - source_matchers:
+              - 'alertname = InfoInhibitor'
+            target_matchers:
+              - 'severity = info'
+            equal:
+              - 'namespace'
+          - target_matchers:
+              - 'alertname = InfoInhibitor'
+        route:
+          group_by: ['namespace', 'alertname']
+          group_wait: 30s
+          group_interval: 5m
+          repeat_interval: 12h
+          receiver: 'slack'
+          routes:
+          - receiver: 'null'
+            matchers:
+              - alertname = "Watchdog"
+          - receiver: 'aerbag-slack'
+            matchers:
+              - namespace = "aerbag-app"
+          - receiver: 'aerbag-slack'
+            matchers:
+              - namespace = "payments"
+          - receiver: 'aerbag-slack'
+            matchers:
+              - namespace = "auto-parts"
+        receivers:
+        - name: 'null'
+        - name: "aerbag-slack"
+          slack_configs:
+          - send_resolved: true
+            api_url: '{{ monitoring_slack_url}}'
+            icon_url: https://avatars3.githubusercontent.com/u/3380462
+            channel: "#{{ monitoring_slack_channel }}"
+            text: '{{ template "slack.default.text" . }}'
+            
+        - name: "slack"
+          slack_configs:
+          - send_resolved: true
+            icon_url: https://avatars3.githubusercontent.com/u/3380462
+            channel: "#{{ monitoring_slack_channel }}"
+            text: '{{ template "slack.default.text" . }}'
+        templates:
+        - '/etc/alertmanager/config/*.tmpl'
+      templateFiles: 
+        # escape the template to avoid Helmfile from interpreting it    
+        # write scape
+        slack.tmpl: |-
+          {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
+          {{ define "slack.default.text" }}
+          {{- $root := . -}}
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }} - {{ "`{{ .Labels.severity }}`" }}
+          *Cluster:* {{ template "cluster" $root }}
+          *Description:* {{ .Annotations.description }}
+          *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>
+          *Runbook:* <{{ .Annotations.runbook }}|:spiral_note_pad:>
+          *Details:*
+              {{ range .Labels.SortedPairs }} - *{{ .Name }}:* {{ "`{{ .Value }}`" }}
+              {{ end }}
+          {{ end }}
+          {{ end }}
+      ingress:
+        enabled: true
+        hosts: 
+          - alertmanager.internal

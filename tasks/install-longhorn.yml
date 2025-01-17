@@ -1,0 +1,5 @@
+---
+- name: "install Longhorn "
+  copy:
+    src: longhorn.yaml
+    dest: /var/lib/rancher/rke2/server/manifests/longhorn.yaml
