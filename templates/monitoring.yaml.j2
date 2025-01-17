@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -31,7 +32,7 @@ spec:
     alertmanager:
       config:
         global:
-          slack_api_url: '{{ monitoring_slack_url}}'
+          slack_api_url: '{{ monitoring_slack_url }}'
           resolve_timeout: 5m
         inhibit_rules:
           - source_matchers:
@@ -80,37 +81,17 @@ spec:
         - name: "aerbag-slack"
           slack_configs:
           - send_resolved: true
-            api_url: '{{ monitoring_slack_url}}'
+            api_url: '{{ monitoring_slack_url }}'
             icon_url: https://avatars3.githubusercontent.com/u/3380462
-            channel: "#{{ monitoring_slack_channel }}"
-            text: '{{ template "slack.default.text" . }}'
-            
+            channel: '#{{ monitoring_slack_channel }}'
+            text: '{{ "{{ template \"slack.default.text\" . }}" }}'
         - name: "slack"
           slack_configs:
           - send_resolved: true
             icon_url: https://avatars3.githubusercontent.com/u/3380462
-            channel: "#{{ monitoring_slack_channel }}"
-            text: '{{ template "slack.default.text" . }}'
+            channel: '#{{ monitoring_slack_channel }}'
         templates:
         - '/etc/alertmanager/config/*.tmpl'
-      templateFiles: 
-        # escape the template to avoid Helmfile from interpreting it    
-        # write scape
-        slack.tmpl: |-
-          {{ define "cluster" }}{{ .ExternalURL | reReplaceAll ".*alertmanager\\.(.*)" "$1" }}{{ end }}
-          {{ define "slack.default.text" }}
-          {{- $root := . -}}
-          {{ range .Alerts }}
-          *Alert:* {{ .Annotations.summary }} - {{ "`{{ .Labels.severity }}`" }}
-          *Cluster:* {{ template "cluster" $root }}
-          *Description:* {{ .Annotations.description }}
-          *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>
-          *Runbook:* <{{ .Annotations.runbook }}|:spiral_note_pad:>
-          *Details:*
-              {{ range .Labels.SortedPairs }} - *{{ .Name }}:* {{ "`{{ .Value }}`" }}
-              {{ end }}
-          {{ end }}
-          {{ end }}
       ingress:
         enabled: true
         hosts: 

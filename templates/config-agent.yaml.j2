@@ -4,4 +4,5 @@ tls-san:
  {% for host in groups['controller'] %}
   - {{ host }}
  {% endfor %}
+ 
 disable-cloud-controller: true

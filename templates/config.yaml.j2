@@ -5,6 +5,7 @@ token: "{{ rke2_token }}"
 tls-san:
  {% for host in groups['controller'] %}
   - {{ host }}
-  {% endfor %}
+ {% endfor %}
+
 node-taint:
   - "CriticalAddonsOnly=true:NoExecute"
