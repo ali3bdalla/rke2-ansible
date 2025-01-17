@@ -1,1 +1,16 @@
----
+galaxy_info:
+  role_name: rke2
+  author: ali3bdalla
+  description: An Ansible role to install and configure RKE2.
+  license: MIT
+  min_ansible_version: 2.9
+  platforms:
+    - name: ubuntu
+      versions:
+        - focal
+        - jammy
+    - name: centos
+      versions:
+        - 7
+        - 8
+dependencies: []

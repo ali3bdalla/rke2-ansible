@@ -177,54 +177,54 @@ git clone https://github.com/ali3bdalla/rke2-ansible.git
 cd rke2-ansible
 ```
 
-## sample of inventory.ini
+## sample of inventory.yaml
 
 ```
 cluster:
-    children:
+  children:
     - controller
     - worker
 controller:
-    hosts:
-        controller_1:
-            ansible_host: 10.100.70.101
-            ansible_user: appdepl
-        controller_2:
-            ansible_host: 10.100.70.102
-            ansible_user: appdepl
-        controller_3:
-            ansible_host: 10.100.70.103
-            ansible_user: appdepl
+  hosts:
+    controller_1:
+      ansible_host: 10.100.70.101
+      ansible_user: appdepl
+    controller_2:
+      ansible_host: 10.100.70.102
+      ansible_user: appdepl
+    controller_3:
+      ansible_host: 10.100.70.103
+      ansible_user: appdepl
 lightweight:
-    hosts:
-        rke2-worker-11:
-            ansible_host: 10.100.70.110
-            ansible_user: appdepl
-        rke2-worker-12:
-            ansible_host: 10.100.70.111
-            ansible_user: appdepl
-        rke2-worker-13:
-            ansible_host: 10.100.70.112
-            ansible_user: appdepl
+  hosts:
+    rke2-worker-11:
+      ansible_host: 10.100.70.110
+      ansible_user: appdepl
+    rke2-worker-12:
+      ansible_host: 10.100.70.111
+      ansible_user: appdepl
+    rke2-worker-13:
+      ansible_host: 10.100.70.112
+      ansible_user: appdepl
 statefull:
-    hosts:
-        rke2-worker-21:
-            ansible_host: 10.100.70.140
-            ansible_user: appdepl
-        rke2-worker-22:
-            ansible_host: 10.100.70.141
-            ansible_user: appdepl
-        rke2-worker-23:
-            ansible_host: 10.100.70.142
-            ansible_user: appdepl
-        rke2-worker-31:
-            ansible_host: 10.100.70.160
-            ansible_user: appdepl
-        rke2-worker-32:
-            ansible_host: 10.100.70.161
-            ansible_user: appdepl
+  hosts:
+    rke2-worker-21:
+      ansible_host: 10.100.70.140
+      ansible_user: appdepl
+    rke2-worker-22:
+      ansible_host: 10.100.70.141
+      ansible_user: appdepl
+    rke2-worker-23:
+      ansible_host: 10.100.70.142
+      ansible_user: appdepl
+    rke2-worker-31:
+      ansible_host: 10.100.70.160
+      ansible_user: appdepl
+    rke2-worker-32:
+      ansible_host: 10.100.70.161
+      ansible_user: appdepl
 worker:
-    children:
+  children:
     - lightweight
     - statefull
 ```
