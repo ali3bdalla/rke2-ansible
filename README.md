@@ -1,0 +1,178 @@
+# RKE2 Ansible Role
+
+This Ansible role automates the installation of **RKE2** (Rancher Kubernetes Engine 2) on provisioned nodes and can optionally install additional tools such as Longhorn, ArgoCD, Autoscaler, and Monitoring.
+
+## Requirements
+
+- Ansible 2.9 or higher
+- Ubuntu 20.04 or other supported Linux distributions on the nodes
+- SSH access to the nodes
+- Set the required variables in your `inventory.ini` or through the `vars` section in your playbook
+
+## Role Variables
+
+This section outlines the variables available for configuration in this role.
+
+### RKE2 Installation
+
+- **uninstall_rke2**  
+  Set to `true` to uninstall RKE2 from the nodes. Default is `false`.
+
+  ```yaml
+  uninstall_rke2: false
+  ```
+
+- **uninstall_rke2_on_worker**  
+  Set to `true` to uninstall RKE2 from worker nodes only. Default is `false`.
+
+  ```yaml
+  uninstall_rke2_on_worker: false
+  ```
+
+- **rke2_token**  
+  Token used to join additional nodes to the RKE2 cluster. This can be generated during the initial setup of the RKE2 server node.
+
+  ```yaml
+  rke2_token: "your-token-here"
+  ```
+
+- **rke2_version**  
+  The version of RKE2 to install. Default is the latest stable version.
+
+  ```yaml
+  rke2_version: "v1.22.3+rke2r1"
+  ```
+
+- **rke2_server_ip**  
+  The IP address of the RKE2 server node. Required if configuring the role for master/slave nodes.
+
+  ```yaml
+  rke2_server_ip: "192.168.1.100"
+  ```
+
+### Optional Add-Ons
+
+- **install_longhorn**  
+  Set to `true` to install Longhorn for persistent storage in your RKE2 cluster. Default is `false`.
+
+  ```yaml
+  install_longhorn: false
+  ```
+
+- **install_monitoring**  
+  Set to `true` to install monitoring tools (e.g., Prometheus and Grafana) in the cluster. Default is `false`.
+
+  ```yaml
+  install_monitoring: false
+  ```
+
+- **monitoring_slack_url**  
+  URL for Slack webhook to send monitoring alerts to a Slack channel.
+
+  ```yaml
+  monitoring_slack_url: "https://hooks.slack.com/services/..."
+  ```
+
+- **monitoring_slack_channel**  
+  The Slack channel to receive monitoring alerts.
+
+  ```yaml
+  monitoring_slack_channel: "#monitoring-alerts"
+  ```
+
+### ArgoCD Installation
+
+- **install_argocd**  
+  Set to `true` to install ArgoCD for continuous delivery in your cluster. Default is `false`.
+
+  ```yaml
+  install_argocd: false
+  ```
+
+- **argocd_domain**  
+  The domain name for accessing the ArgoCD web interface. This is required if you plan to use ArgoCD.
+
+  ```yaml
+  argocd_domain: "argocd.example.com"
+  ```
+
+- **install_argocd_bootstraper**  
+  Set to `true` to install ArgoCD bootstrapping tools. Default is `false`.
+
+  ```yaml
+  install_argocd_bootstraper: false
+  ```
+
+- **argocd_bootstrap_repo_url**  
+  URL of the Git repository for ArgoCD bootstrapping. Set this if using ArgoCD with a repository for configuration management.
+
+  ```yaml
+  argocd_bootstrap_repo_url: "https://github.com/your/repo"
+  ```
+
+- **argocd_bootstrap_repo_path**  
+  Path within the repository for the ArgoCD bootstrap configuration. Default is `bootstrap`.
+
+  ```yaml
+  argocd_bootstrap_repo_path: "bootstrap"
+  ```
+
+- **argocd_bootstrap_repo_branch**  
+  Branch of the Git repository to use for ArgoCD bootstrapping. Default is `HEAD`.
+
+  ```yaml
+  argocd_bootstrap_repo_branch: "HEAD"
+  ```
+
+- **argocd_bootstrap_repo_username**  
+  Username for accessing the ArgoCD bootstrap repository (if private). Leave empty for public repositories.
+
+  ```yaml
+  argocd_bootstrap_repo_username: "your-username"
+  ```
+
+- **argocd_bootstrap_repo_access_token**  
+  Access token for the ArgoCD bootstrap repository (if private). Leave empty for public repositories.
+
+  ```yaml
+  argocd_bootstrap_repo_access_token: "your-token"
+  ```
+
+### Autoscaler Installation
+
+- **install_autoscaller**  
+  Set to `true` to install the Kubernetes Autoscaler. Default is `false`.
+
+  ```yaml
+  install_autoscaller: false
+  ```
+
+## Example Playbook
+
+```yaml
+---
+- hosts: all
+  become: true
+  vars:
+    rke2_token: "your-token-here"
+    rke2_version: "v1.22.3+rke2r1"
+    uninstall_rke2: false
+    install_longhorn: true
+    install_monitoring: true
+    install_argocd: true
+    argocd_domain: "argocd.example.com"
+    install_autoscaller: true
+  roles:
+    - rke2-ansible
+```
+
+## Usage
+
+### Clone the Repository
+
+First, clone this repository to your local machine:
+
+```bash
+git clone https://github.com/ali3bdalla/rke2-ansible.git
+cd rke2-ansible
+```
