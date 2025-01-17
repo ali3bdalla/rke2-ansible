@@ -228,3 +228,52 @@ worker:
     - lightweight
     - statefull
 ```
+
+### sample playbook.yml
+
+```
+- name: "Generate RKE2 token and store it in file"
+  hosts: localhost # You can run this locally on your controller machine
+  tasks:
+    - name: "Check if .rke-config/token exists"
+      stat:
+        path: ".rke-config/token"
+      register: token_file
+    - name: "Generate RKE2 token if file does not exist"
+      shell: "openssl rand -hex 32"
+      register: rke2_token
+      when: not token_file.stat.exists
+
+    - name: "Create .rke-config directory if not exists"
+      file:
+        path: ".rke-config"
+        state: directory
+      when: not token_file.stat.exists
+
+    - name: "Write token to file"
+      copy:
+        content: "{{ rke2_token.stdout }}"
+        dest: ".rke-config/token"
+      when: not token_file.stat.exists
+- name: "Install RKE2 on controllers"
+  hosts: controller
+  become: true
+  become_user: root
+  vars:
+    generated_token: "{{ lookup('file', '.rke-config/token') }}"
+  roles:
+    - role: ali3bdalla.rke2
+      vars:
+        rke2_token: "{{ generated_token }}"
+
+- name: "Install RKE2 on workers"
+  hosts: worker
+  become: true
+  become_user: root
+  vars:
+    generated_token: "{{ lookup('file', '.rke-config/token') }}"
+  roles:
+    - role: ali3bdalla.rke2
+      vars:
+        rke2_token: "{{ generated_token }}"
+```
