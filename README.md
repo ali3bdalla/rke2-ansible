@@ -277,3 +277,20 @@ worker:
       vars:
         rke2_token: "{{ generated_token }}"
 ```
+
+# Services can be enabled
+
+### Nas NFS Storage class
+
+see https://github.com/ali3bdalla/k8s-truenas
+
+```
+install_nfs: false
+nfs_server_protocol: "http"
+nfs_server_host: ""
+nfs_server_port: ""
+nfs_server_api_key: ""
+nfs_server_volume_path: ""
+nfs_server_snapshot_path: ""
+
+```
