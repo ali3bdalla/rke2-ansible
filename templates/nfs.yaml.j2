@@ -1,0 +1,63 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: nfs
+  namespace: services
+spec:
+  chart: democratic-csi
+  version: "0.14.7"
+  repo: https://democratic-csi.github.io/charts/
+  valuesContent: |-
+    csiDriver:
+      name: "nfs"
+    storageClasses:
+    - name: nfs
+      defaultClass: false
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      allowVolumeExpansion: true
+      parameters:
+        fsType: nfs
+        detachedVolumesFromSnapshots: "false"
+      mountOptions:
+      - noatime
+      - nfsvers=3
+      secrets:
+        provisioner-secret:
+        controller-publish-secret:
+        node-stage-secret:
+        node-publish-secret:
+        controller-expand-secret:
+    volumeSnapshotClasses:
+    - name: nfs
+      parameters:
+        detachedSnapshots: "true"
+    driver:
+      config:
+        driver: freenas-api-nfs
+        instance_id:
+        httpConnection:
+          protocol: {{ nfs_server_protocol}}
+          host: {{ nfs_server_host}}
+          port: {{ nfs_server_port}}
+          apiKey: {{ nfs_server_api_key}}
+          allowInsecure: true
+        zfs:
+          datasetParentName: {{ nfs_server_volume_path}}
+          detachedSnapshotsDatasetParentName: {{ nfs_server_snapshot_path}}
+          datasetEnableQuotas: true
+          datasetEnableReservation: false
+          datasetPermissionsMode: "0777"
+          datasetPermissionsUser: 0
+          datasetPermissionsGroup: 0
+        nfs:
+          datasetParentName: {{ nfs_server_volume_path}}
+          detachedSnapshotsDatasetParentName: {{ nfs_server_snapshot_path}}
+          shareHost: {{ nfs_server_host}}
+          shareAlldirs: false
+          shareAllowedHosts: []
+          shareAllowedNetworks: []
+          shareMaprootUser: root
+          shareMaprootGroup: root
+          shareMapallUser: ""
+          shareMapallGroup: ""
