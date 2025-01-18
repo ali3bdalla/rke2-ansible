@@ -1,4 +1,4 @@
-- name: "Update Packages" 
+- name: "Update Packages"
   apt:
     update_cache: yes
 - name: "Check internet connectivity"
@@ -13,6 +13,14 @@
       {% for host in groups.cluster %}
       {{ hostvars[host].ansible_host }} {{ hostvars[host].inventory_hostname }}
       {% endfor %}
+- name: "add hostnames of controllers to /etc/cloud/templates/hosts.debian.tmpl when using cloud-init"
+  blockinfile:
+    state: present
+    dest: /etc/cloud/templates/hosts.debian.tmpl
+    content: |
+      {% for host in groups.cluster %}
+      {{ hostvars[host].ansible_host }} {{ hostvars[host].inventory_hostname }}
+      {% endfor %}
 - name: "Install open-iscsi"
   apt:
     name: open-iscsi
@@ -20,7 +28,7 @@
 - name: "Install nfs-common"
   apt:
     name: nfs-common
-    state: present  
+    state: present
 # cryptsetup
 - name: "Install cryptsetup"
   apt:
