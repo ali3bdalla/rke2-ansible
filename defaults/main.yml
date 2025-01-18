@@ -31,10 +31,14 @@ monitoring_slack_template: -|
   {{ end }}
 argocd_domain: ""
 
-install_nfs: false
-nfs_server_protocol: "http"
-nfs_server_host: ""
-nfs_server_port: ""
-nfs_server_api_key: ""
-nfs_server_volume_path: ""
-nfs_server_snapshot_path: ""
+install_nas: false
+nas_server_protocol: "http"
+nas_server_host: ""
+nas_server_port: "80"
+nas_server_api_key: ""
+nas_nfs_server_volume_path: ""
+nas_nfs_server_snapshot_path: ""
+nas_iscsi_server_volume_path: ""
+nas_iscsi_server_snapshot_path: ""
+
+nas_isic_server_port: "3260"

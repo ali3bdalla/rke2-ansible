@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nas
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: nfs
+  namespace: nas
+spec:
+  chart: democratic-csi
+  version: "0.14.7"
+  repo: https://democratic-csi.github.io/charts/
+  valuesContent: |-
+    csiDriver:
+      name: "nfs"
+    storageClasses:
+    - name: nfs
+      defaultClass: false
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      allowVolumeExpansion: true
+      parameters:
+        fsType: nfs
+        detachedVolumesFromSnapshots: "false"
+      mountOptions:
+      - noatime
+      - nfsvers=3
+      secrets:
+        provisioner-secret:
+        controller-publish-secret:
+        node-stage-secret:
+        node-publish-secret:
+        controller-expand-secret:
+    volumeSnapshotClasses:
+    - name: nfs
+      parameters:
+        detachedSnapshots: "true"
+    driver:
+      config:
+        driver: freenas-api-nfs
+        instance_id:
+        httpConnection:
+          protocol: {{ nas_server_protocol}}
+          host: {{ nas_server_host}}
+          port: {{ nas_server_port}}
+          apiKey: {{ nas_server_api_key}}
+          allowInsecure: true
+        zfs:
+          datasetParentName: {{ nas_nfs_server_volume_path}}
+          detachedSnapshotsDatasetParentName: {{ nas_nfs_server_snapshot_path}}
+          datasetEnableQuotas: true
+          datasetEnableReservation: false
+          datasetPermissionsMode: "0777"
+          datasetPermissionsUser: 0
+          datasetPermissionsGroup: 0
+        nfs:
+          datasetParentName: {{ nas_nfs_server_volume_path}}
+          detachedSnapshotsDatasetParentName: {{ nas_nfs_server_snapshot_path}}
+          shareHost: {{ nas_server_host}}
+          shareAlldirs: false
+          shareAllowedHosts: []
+          shareAllowedNetworks: []
+          shareMaprootUser: root
+          shareMaprootGroup: root
+          shareMapallUser: ""
+          shareMapallGroup: ""
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: iscsi
+  namespace: nas
+spec:
+  chart: democratic-csi
+  version: "0.14.7"
+  repo: https://democratic-csi.github.io/charts/
+  valuesContent: |-
+    csiDriver:
+      name: "iscsi"
+    storageClasses:
+    - name: iscsi
+      defaultClass: false
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      allowVolumeExpansion: true
+      parameters:
+        fsType: ext4
+        detachedVolumesFromSnapshots: "false"
+      mountOptions: []
+      secrets:
+        provisioner-secret:
+        controller-publish-secret:
+        node-stage-secret:
+        node-publish-secret:
+        controller-expand-secret:
+    volumeSnapshotClasses:
+    - name: iscsi
+      parameters:
+        detachedSnapshots: "true"
+    driver:
+      config:
+        driver: freenas-api-iscsi
+        instance_id:
+        httpConnection:
+          protocol: {{ nas_server_protocol}}
+          host: {{ nas_server_host}}
+          port: {{ nas_server_port}}
+          apiKey: {{ nas_server_api_key}}
+          allowInsecure: true
+        zfs:
+          datasetParentName: {{ nas_iscsi_server_volume_path}}
+          detachedSnapshotsDatasetParentName: {{ nas_iscsi_server_snapshot_path}}
+          zvolCompression:
+          zvolDedup:
+          zvolEnableReservation: false
+          zvolBlocksize:
+        iscsi:
+          targetPortal:  {{ nas_server_host}}:{{ nas_isic_server_port}}
+          targetPortals: [] 
+          interface:
+          namePrefix: csi-
+          nameSuffix: "-clustera"
+          targetGroups:
+            - targetGroupPortalGroup: 8
+              targetGroupInitiatorGroup: 14
+              targetGroupAuthType: None
+              targetGroupAuthGroup:
+          extentInsecureTpc: true
+          extentXenCompat: false
+          extentDisablePhysicalBlocksize: true
+          extentBlocksize: 512
+          extentRpm: "SSD"
+          extentAvailThreshold: 0

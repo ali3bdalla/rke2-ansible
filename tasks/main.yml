@@ -17,10 +17,9 @@
 - name: "install longhorn"
   include_tasks: install-longhorn.yml
   when: install_longhorn and inventory_hostname in groups['controller']
-
-- name: "install nfs"
-  include_tasks: install-nfs.yml
-  when: install_nfs and inventory_hostname in groups['controller']
+- name: "install nas"
+  include_tasks: install-nas.yml
+  when: install_nas and inventory_hostname in groups['controller']
 - name: "install monitoring"
   include_tasks: install-monitoring.yml
   when: install_monitoring and inventory_hostname in groups['controller']

@@ -1,5 +1,0 @@
-- name: "add nfs helm chart"
-  template:
-    src: nfs.yaml.j2
-    force: yes
-    dest: /var/lib/rancher/rke2/server/manifests/nfs.yaml

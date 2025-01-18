@@ -1,0 +1,5 @@
+- name: "add Nas helm chart"
+  template:
+    src: nas.yaml.j2
+    force: yes
+    dest: /var/lib/rancher/rke2/server/manifests/nas.yaml
