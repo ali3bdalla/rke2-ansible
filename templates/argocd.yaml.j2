@@ -10,7 +10,7 @@ metadata:
   namespace: argocd
 spec:
   chart: argo-cd
-  version: "7.7.3"
+  version: "7.7.16"
   repo: https://argoproj.github.io/argo-helm/
   valuesContent: |-
     repoServer:
@@ -46,4 +46,4 @@ spec:
         ingressClassName: "nginx"
         tls: false
     global: 
-      domain: "{{ argocd_domain }}
+      domain: "{{ argocd_domain }}"
