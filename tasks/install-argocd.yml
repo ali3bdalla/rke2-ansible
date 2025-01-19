@@ -8,4 +8,4 @@
     src: argocd-bootstraper.yaml.j2
     dest: /var/lib/rancher/rke2/server/manifests/argocd-bootstraper.yaml
     force: yes
-  when: install_argocd_bootstraper == true
+  when: install_argocd_bootstraper == true and argocd_bootstrap_repo_url != ""

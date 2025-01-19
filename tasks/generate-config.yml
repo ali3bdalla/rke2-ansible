@@ -1,5 +1,13 @@
+- name: Get PVE_NODE_NAME
+  command: echo $PVE_NODE_NAME
+  register: pve_node_name
+
+- name: Get PVE_NODE_TYPE
+  command: echo $PVE_NODE_TYPE
+  register: pve_node_type
+
 - name: "Make Directory /etch/rancher/rke2"
-  file: 
+  file:
     path: /etc/rancher/rke2
     state: directory
     owner: root
@@ -10,17 +18,21 @@
   template:
     src: config.yaml.j2
     dest: /etc/rancher/rke2/config.yaml
-    owner: root
-    group: root
-    mode: 0644
+    mode: 755
     force: yes
   when: inventory_hostname in groups['controller']
+  vars:
+    node_name: "{{ pve_node_name.stdout }}"
+    node_type: "{{ pve_node_type.stdout }}"
 - name: "Generate RKE2 Agent config"
   template:
     src: config-agent.yaml.j2
     dest: /etc/rancher/rke2/config.yaml
     owner: root
     group: root
-    mode: 0644
+    mode: 755
     force: yes
   when: inventory_hostname in groups['worker']
+  vars:
+    node_name: "{{ pve_node_name.stdout }}"
+    node_type: "{{ pve_node_type.stdout }}"

@@ -1,12 +1,12 @@
 ---
-
 - name: "Ensure backup config exists"
-  command: "cp /etc/rancher/rke2/config.yaml /etc/rancher/rke2/config.yaml.bak"
-  when: 
+  copy:
+    src: "/etc/rancher/rke2/config.yaml"
+    dest: "/etc/rancher/rke2/config.yaml.bak"
+    remote_src: yes
+  when:
     - inventory_hostname in groups['controller']
     - not lookup('file', '/etc/rancher/rke2/config.yaml.bak', errors='ignore')
-  register: backup_created
-
 - name: "Check current config checksum"
   command: "sha256sum /etc/rancher/rke2/config.yaml"
   register: current_config_checksum
@@ -15,62 +15,26 @@
 - name: "Check backup config checksum (if exists)"
   command: "sha256sum /etc/rancher/rke2/config.yaml.bak"
   register: backup_config_checksum
-  when: 
-    - inventory_hostname in groups['controller']
+  when: inventory_hostname in groups['controller']
 
-- name: "Restart rke2-agent if config has changed"
-  systemd:
-    name: rke2-agent
-    enabled: yes
-    state: restarted
-  when: 
-    - inventory_hostname in groups['controller']
-    - current_config_checksum.stdout.split()[0] != backup_config_checksum.stdout.split()[0]
-
-- name: "Check backup config checksum (if exists)"
-  command: "sha256sum /etc/rancher/rke2/config.yaml.bak"
-  register: backup_config_checksum
-  when: 
-    - inventory_hostname in groups['controller']
-
-- name: "restart for RKE2 server controller-1"
+- name: "Restart rke2-server if config has changed"
   systemd:
     name: rke2-server
     enabled: yes
     state: restarted
-  when: 
+  when:
     - inventory_hostname in groups['controller']
     - current_config_checksum.stdout.split()[0] != backup_config_checksum.stdout.split()[0]
-    - inventory_hostname == groups['controller'][0] 
-    
-- name: "start for RKE2 server controller-1"
+
+- name: "start for RKE2 server controller"
   systemd:
     name: rke2-server
     enabled: yes
     state: started
-  when: 
+  when:
     - inventory_hostname in groups['controller']
     - current_config_checksum.stdout.split()[0] == backup_config_checksum.stdout.split()[0]
-    - inventory_hostname == groups['controller'][0]
-
-
-- name: "restart for RKE2 server hpa-controller"
-  systemd:
-    name: rke2-server
-    enabled: yes
-    state: restarted
-  when: 
+- name: "Update backup config"
+  command: "cp /etc/rancher/rke2/config.yaml /etc/rancher/rke2/config.yaml.bak"
+  when:
     - inventory_hostname in groups['controller']
-    - current_config_checksum.stdout.split()[0] != backup_config_checksum.stdout.split()[0]
-    - inventory_hostname != groups['controller'][0]
-- name: "start for RKE2 server  hpa-controller"
-  systemd:
-    name: rke2-server
-    enabled: yes
-    state: started
-  when: 
-    - inventory_hostname in groups['controller']
-    - current_config_checksum.stdout.split()[0] == backup_config_checksum.stdout.split()[0]
-    - inventory_hostname != groups['controller'][0]
-
-  

@@ -17,7 +17,7 @@ spec:
       name: "nfs"
     storageClasses:
     - name: nfs
-      defaultClass: false
+      defaultClass: true
       reclaimPolicy: Delete
       volumeBindingMode: Immediate
       allowVolumeExpansion: true
@@ -82,7 +82,7 @@ spec:
     storageClasses:
     - name: iscsi
       defaultClass: false
-      reclaimPolicy: Delete
+      reclaimPolicy: Retain
       volumeBindingMode: Immediate
       allowVolumeExpansion: true
       parameters:

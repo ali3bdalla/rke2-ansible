@@ -2,6 +2,7 @@
 uninstall_rke2: false
 unsintall_rke2_on_worker: false
 rke2_token: ""
+rke2_version: "v1.32.0+rke2r1"
 install_longhorn: false
 install_monitoring: false
 install_argocd: false

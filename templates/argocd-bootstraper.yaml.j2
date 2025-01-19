@@ -1,26 +1,20 @@
 apiVersion: v1
-kind: Secret
+kind: Namespace
 metadata:
-  name: gitlab-host-prefix-creds
-  namespace: argocd
-  labels:
-    argocd.argoproj.io/secret-type: repo-creds
-stringData:
-  type: git
-  url: https://gitlab.com/
-  password: "{{ argocd_bootstrap_repo_access_token }}"
-  username: "{{ argocd_bootstrap_repo_username }}"
+  name: argocd
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: argocd-bootstraper-repo
+  name: gitlab-host-prefix-creds
   namespace: argocd
   labels:
     argocd.argoproj.io/secret-type: repository
 stringData:
   type: git
   url: "{{ argocd_bootstrap_repo_url }}"
+  username: "{{ argocd_bootstrap_repo_username }}"
+  password: "{{ argocd_bootstrap_repo_access_token }}"
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -36,12 +30,9 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
-
-  # Extra information to show in the Argo CD Application details tab
   info:
     - name: 'domain:'
       value: 'https://appdepl.com'
-  # Sync policy
   syncPolicy:
     automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
       prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
@@ -54,11 +45,3 @@ spec:
     - PruneLast=true # Allow the ability for resource pruning to happen as a final, implicit wave of a sync operation
     - RespectIgnoreDifferences=true # When syncing changes, respect fields ignored by the ignoreDifferences configuration
     - ApplyOutOfSyncOnly=true # Only sync out-of-sync resources, rather than applying every object in the application
-    # managedNamespaceMetadata: # Sets the metadata for the application namespace. Only valid if CreateNamespace=true (see above), otherwise it's a no-op.
-    #   labels: # The labels to set on the application namespace
-    #     any: label
-    #     you: like
-    #   annotations: # The annotations to set on the application namespace
-    #     the: same
-    #     applies: for
-    #     annotations: on-the-namespace

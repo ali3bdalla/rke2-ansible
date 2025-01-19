@@ -5,21 +5,59 @@
   uri:
     url: "http://www.google.com"
     status_code: 200
+# - name: Install apparmor and related tools
+#   apt:
+#     name:
+#       - apparmor
+#       - apparmor-utils
+#     state: present
+#     update_cache: yes
+- name: Ensure required packages are installed
+  apt:
+    name:
+      - curl
+      - conntrack
+      - socat
+      - ebtables
+      - ipset
+      - iptables
+      - dnsutils
+    state: present
+    update_cache: true
+- name: Disable cloud-init management of /etc/hosts
+  lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: "^manage_etc_hosts:"
+    line: "manage_etc_hosts: false"
+    state: present
+  become: true
+
+- name: Remove the 127.0.1.1 line
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1.*$'
+    state: absent
+
+- name: Ensure the localhost entry exists
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    line: "127.0.0.1 localhost"
+    state: present
 - name: "add hostnames of controllers to /etc/hosts"
   blockinfile:
     state: present
     dest: /etc/hosts
     content: |
       {% for host in groups.cluster %}
+      {% if host == inventory_hostname %}
+      {% if host in groups['controller'] %}
+      127.0.0.1 rke2-api-server.internal
+      {% endif %}
+      127.0.0.1 {{ hostvars[host].inventory_hostname }}
+      {% else %}
       {{ hostvars[host].ansible_host }} {{ hostvars[host].inventory_hostname }}
-      {% endfor %}
-- name: "add hostnames of controllers to /etc/cloud/templates/hosts.debian.tmpl when using cloud-init"
-  blockinfile:
-    state: present
-    dest: /etc/cloud/templates/hosts.debian.tmpl
-    content: |
-      {% for host in groups.cluster %}
-      {{ hostvars[host].ansible_host }} {{ hostvars[host].inventory_hostname }}
+      {% endif %}
       {% endfor %}
 - name: "Install open-iscsi"
   apt:

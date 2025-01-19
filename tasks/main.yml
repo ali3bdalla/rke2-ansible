@@ -6,14 +6,12 @@
   include_tasks: prepare-nodes.yml
 - name: "Install rke2"
   include_tasks: install-rke2.yml
-- name: "Enable RKE2 service"
-  include_tasks: enable-rke2.yml
+- name: "generate /etc/rancher/rke2/config.yaml"
+  include_tasks: generate-config.yml
 - name: "/var/lib/rancher/rke2/server/manifests"
   file:
     path: "/var/lib/rancher/rke2/server/manifests"
     state: directory
-- name: "generate /etc/rancher/rke2/config.yaml"
-  include_tasks: generate-config.yml
 - name: "install longhorn"
   include_tasks: install-longhorn.yml
   when: install_longhorn and inventory_hostname in groups['controller']
@@ -31,5 +29,7 @@
   when: install_autoscaller and inventory_hostname in groups['controller']
 - name: "Bootstrap RKE2"
   include_tasks: bootstrap.yml
+  when: inventory_hostname in groups['controller']
 - name: "Bootstrap agent RKE2"
   include_tasks: bootstrap-agent.yml
+  when: inventory_hostname in groups['worker']

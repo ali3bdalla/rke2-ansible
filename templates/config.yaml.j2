@@ -3,9 +3,15 @@ server: https://{{ groups['controller'][0] }}:9345
 {% endif %}
 token: "{{ rke2_token }}"
 tls-san:
- {% for host in groups['controller'] %}
-  - {{ host }}
- {% endfor %}
-
+ - rke2-api-server.internal
+{% for host in groups['controller'] %}
+ - {{ hostvars[host].ansible_host }}
+ - {{ hostvars[host].inventory_hostname }}
+{% endfor %}
+node-label:
+  - "on-prem.internal/pve-node-name={{ node_name}}"
+  - "on-prem.internal/pve-rke2-role=controller"
+  - "on-prem.internal/pve-node-type={{ node_type }}"
+disable-cloud-controller: true
 node-taint:
   - "CriticalAddonsOnly=true:NoExecute"
