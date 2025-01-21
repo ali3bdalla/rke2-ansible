@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: nas
+  name: nas-service
 ---
 apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
   name: nfs
-  namespace: nas
+  namespace: nas-service
 spec:
   chart: democratic-csi
   version: "0.14.7"
@@ -19,6 +19,22 @@ spec:
     - name: nfs
       defaultClass: true
       reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      allowVolumeExpansion: true
+      parameters:
+        fsType: nfs
+        detachedVolumesFromSnapshots: "false"
+      mountOptions:
+      - noatime
+      - nfsvers=3
+      secrets:
+        provisioner-secret:
+        controller-publish-secret:
+        node-stage-secret:
+        node-publish-secret:
+        controller-expand-secret:
+    - name: nfs-backup
+      reclaimPolicy: Retain
       volumeBindingMode: Immediate
       allowVolumeExpansion: true
       parameters:
@@ -71,7 +87,7 @@ apiVersion: helm.cattle.io/v1
 kind: HelmChart
 metadata:
   name: iscsi
-  namespace: nas
+  namespace: nas-service
 spec:
   chart: democratic-csi
   version: "0.14.7"
@@ -82,7 +98,7 @@ spec:
     storageClasses:
     - name: iscsi
       defaultClass: false
-      reclaimPolicy: Retain
+      reclaimPolicy: Delete
       volumeBindingMode: Immediate
       allowVolumeExpansion: true
       parameters:
@@ -123,8 +139,8 @@ spec:
           namePrefix: csi-
           nameSuffix: "-clustera"
           targetGroups:
-            - targetGroupPortalGroup: 8
-              targetGroupInitiatorGroup: 14
+            - targetGroupPortalGroup: {{ nas_iscsi_group_portal_group}}
+              targetGroupInitiatorGroup: {{ nas_iscsi_group_initiator_group}}
               targetGroupAuthType: None
               targetGroupAuthGroup:
           extentInsecureTpc: true
